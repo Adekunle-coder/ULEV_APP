@@ -1,53 +1,38 @@
 import requests
 import streamlit as st
-
+import pandas as pd
 
 def get_co2_emission(vrm, api_key, url):
-    data = []
     
+    data = []
     try:
         headers = {
             "x-api-key": api_key,
             "Content-Type": "application/json"
         }
-        input_vrm = {
-            "registrationNumber": vrm
-        }
-
+        input_vrm = {"registrationNumber": vrm}
         response = requests.post(url, json=input_vrm, headers=headers)
 
         if response.status_code == 200:
-            try:
-                vehicle_data = response.json()
-                make = vehicle_data.get('make', 'Unknown')
-                colour = vehicle_data.get('colour', 'Unknown')
-                emission = vehicle_data.get('co2Emissions', 'Unknown')
-                vehicle_type = vehicle_data.get('typeApproval', 'Unknown')
+            vehicle_data = response.json()
+            make = vehicle_data.get('make', 'Unknown')
+            colour = vehicle_data.get('colour', 'Unknown')
+            emission = vehicle_data.get('co2Emissions', 'Unknown')
+            vehicle_type = vehicle_data.get('typeApproval', 'Unknown')
 
-                data.append({
-                    "make": make,
-                    "colour": colour,
-                    "emission": emission,
-                    "type": vehicle_type
-                })
-                return data
-            except Exception as json_error:
-                st.write("Error processing JSON response:")
-                st.write(json_error)
-                return None
+            data.append({
+                "make": make,
+                "colour": colour,
+                "emission": emission,
+                "type": vehicle_type
+            })
+            return data
         else:
             st.write(f"Request failed with status code {response.status_code}")
             return None
-
-    except requests.exceptions.RequestException as req_error:
-        st.write("Request exception occurred:")
-        st.write(req_error)
+    except Exception as e:
+        st.write("Error occurred:", e)
         return None
-    except Exception as general_error:
-        st.write("An unexpected error occurred:")
-        st.write(general_error)
-        return None
-
 
 def classify_vehicle_type(type_approval):
     try:
@@ -56,7 +41,7 @@ def classify_vehicle_type(type_approval):
         elif type_approval in ["N1", "N2", "N3"]:
             return "Goods Vehicle"
         elif type_approval == "M1":
-            return "Passenger Car"
+            return "Private Car"
         elif type_approval.startswith("L"):
             return "Motorcycle / Trike"
         elif type_approval.startswith("O"):
@@ -67,6 +52,13 @@ def classify_vehicle_type(type_approval):
         st.write("Error classifying vehicle type:", e)
         return "Unknown"
 
+# Initialize session state variables if not present
+if "ulev_list" not in st.session_state:
+    st.session_state.ulev_list = []
+if "current_vehicle" not in st.session_state:
+    st.session_state.current_vehicle = None
+if "current_vrm" not in st.session_state:
+    st.session_state.current_vrm = ""
 
 st.title("Enter the registration number of the vehicle")
 st.subheader("Registration number (number plate)")
@@ -77,39 +69,60 @@ if st.button("Continue"):
     if not VRM.strip():
         st.warning("Please enter a valid registration number.")
     else:
-        try:
-            url = "https://driver-vehicle-licensing.api.gov.uk/vehicle-enquiry/v1/vehicles"
-            API_KEY = "g3iPHWSLfm2yd9bBzy8C25GEZ8r276Ha9ekLTLsQ"
-            result = get_co2_emission(VRM.strip(), API_KEY, url)
+        url = "https://driver-vehicle-licensing.api.gov.uk/vehicle-enquiry/v1/vehicles"
+        API_KEY = "g3iPHWSLfm2yd9bBzy8C25GEZ8r276Ha9ekLTLsQ"
+        data = get_co2_emission(VRM.strip(), API_KEY, url)
+        if data and isinstance(data, list):
+            st.session_state.current_vehicle = data[0]
+            st.session_state.current_vrm = VRM.strip()
+        else:
+            st.warning("No valid data returned. Please check the registration number and try again.")
+            st.session_state.current_vehicle = None
+            st.session_state.current_vrm = ""
 
-            
+# Now display the vehicle info if present in session state
+if st.session_state.current_vehicle:
+    info = st.session_state.current_vehicle
+    emission_value = info['emission']
+    vehicle_type = info['type']
+    vehicle_type_class = classify_vehicle_type(vehicle_type)
 
-            if result and isinstance(result, list):
-                info = result[0]
-                emission_value = info['emission']
-                vehicle_type = info['type']
-                vehicle_type_class = classify_vehicle_type(vehicle_type)
+    try:
+        emission_num = int(emission_value)
+        if emission_num < 74:
+            st.markdown("<h1 style='color: green;'>ULEV</h1>", unsafe_allow_html=True)
+            if st.button("Add"):
+                if st.session_state.current_vrm not in st.session_state.ulev_list:
+                    st.session_state.ulev_list.append(st.session_state.current_vrm)
+                else:
+                    st.info("This VRM is already added.")
+        else:
+            st.markdown("<h1 style='color: red;'>NOT ULEV</h1>", unsafe_allow_html=True)
+    except ValueError:
+        st.write("Emission value is not a valid number:", emission_value)
 
-                try:
-                    emission_num = int(emission_value)
-                    if emission_num < 74:
-                        st.markdown("<h1 style='color: green;'>ULEV</h1>", unsafe_allow_html=True)
-                    else:
-                        st.markdown("<h1 style='color: red;'>NOT ULEV</h1>", unsafe_allow_html=True)
-                except ValueError:
-                    st.write("Emission value is not a valid number:", emission_value)
-                
-                st.divider()
+    st.divider()
 
-                st.subheader(f"Make: {info['make']}")
-                st.subheader(f"Colour: {info['colour']}")
-                st.subheader(f"CO2 Emissions: {emission_value}g/km")
-                st.subheader(f"Type Approval: {vehicle_type} ({vehicle_type_class})")
-                # Check and display ULEV status
+    st.subheader(f"Make: {info['make']}")
+    st.subheader(f"Colour: {info['colour']}")
+    st.subheader(f"CO2 Emissions: {emission_value}g/km")
+    st.subheader(f"Type Approval: {vehicle_type} ({vehicle_type_class})")
 
-            else:
-                st.warning("No valid data returned. Please check the registration number and try again.")
+    st.divider()
 
-        except Exception as final_error:
-            st.write("An error occurred during processing:")
-            st.write(final_error)
+if st.session_state.ulev_list:
+    st.write("### Stored ULEV Vehicles")
+    for vrm in st.session_state.ulev_list:
+        st.write(f"- {vrm}")
+
+df_ulevs = pd.DataFrame(st.session_state.ulev_list, columns=["VRM"])
+
+csv_data = df_ulevs.to_csv(index=False).encode('utf-8')
+    
+if len(st.session_state.ulev_list) > 1:
+    st.download_button(
+        label="Download ULEV VRMs as CSV",
+        data=csv_data,
+        file_name="ulev_vrms.csv",
+        mime="text/csv"
+    )
