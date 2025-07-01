@@ -78,7 +78,7 @@ if st.button("Continue"):
         st.warning("Please enter a valid registration number.")
     else:
         url = "https://driver-vehicle-licensing.api.gov.uk/vehicle-enquiry/v1/vehicles"
-        API_KEY = os.getenv("DVLA_API_KEY")
+        API_KEY = os.getenv("API_KEY")
         data = get_co2_emission(VRM.strip(), API_KEY, url)
         if data and isinstance(data, list):
             st.session_state.current_vehicle = data[0]
