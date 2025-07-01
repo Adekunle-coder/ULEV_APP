@@ -99,13 +99,23 @@ if st.session_state.current_vehicle:
 
     try:
         emission_num = int(emission_value)
-        if emission_num < 74 and fuel_type != "DIESEL":
-            st.markdown("<h1 style='color: green;'>ULEV</h1>", unsafe_allow_html=True)
-            if st.button("Add"):
-                if st.session_state.current_vrm not in st.session_state.ulev_list:
-                    st.session_state.ulev_list.append(st.session_state.current_vrm)
-                else:
-                    st.info("This VRM is already added.")
+        if emission_num < 74:
+            if emission_num == 0 and fuel_type != "DIESEL":
+                st.markdown("<h1 style='color: green;'>ULEV</h1>", unsafe_allow_html=True)
+                if st.button("Add"):
+                    if st.session_state.current_vrm not in st.session_state.ulev_list:
+                        st.session_state.ulev_list.append(st.session_state.current_vrm)
+                    else:
+                        st.info("This VRM is already added.")
+            elif emission_num == 0 and fuel_type == "DIESEL":
+                st.markdown("<h1 style='color: red;'>NOT ULEV</h1>", unsafe_allow_html=True)
+            else:
+                st.markdown("<h1 style='color: green;'>ULEV</h1>", unsafe_allow_html=True)
+                if st.button("Add"):
+                    if st.session_state.current_vrm not in st.session_state.ulev_list:
+                        st.session_state.ulev_list.append(st.session_state.current_vrm)
+                    else:
+                        st.info("This VRM is already added.")
         else:
             st.markdown("<h1 style='color: red;'>NOT ULEV</h1>", unsafe_allow_html=True)
     except ValueError:
