@@ -24,12 +24,15 @@ def get_co2_emission(vrm, api_key, url):
             colour = vehicle_data.get('colour', 'Unknown')
             emission = vehicle_data.get('co2Emissions', 'Unknown')
             vehicle_type = vehicle_data.get('typeApproval', 'Unknown')
+            fuelType = vehicle_data.get('fuelType', 'Unknown')
+
 
             data.append({
                 "make": make,
                 "colour": colour,
                 "emission": emission,
-                "type": vehicle_type
+                "type": vehicle_type,
+                "fuel": fuelType
             })
             return data
         else:
@@ -89,12 +92,14 @@ if st.button("Continue"):
 if st.session_state.current_vehicle:
     info = st.session_state.current_vehicle
     emission_value = info['emission']
+    fuel_type = info['fuel']
+
     vehicle_type = info['type']
     vehicle_type_class = classify_vehicle_type(vehicle_type)
 
     try:
         emission_num = int(emission_value)
-        if emission_num < 74:
+        if emission_num < 74 and fuel_type != "DIESEL":
             st.markdown("<h1 style='color: green;'>ULEV</h1>", unsafe_allow_html=True)
             if st.button("Add"):
                 if st.session_state.current_vrm not in st.session_state.ulev_list:
@@ -111,6 +116,7 @@ if st.session_state.current_vehicle:
     st.subheader(f"Make: {info['make']}")
     st.subheader(f"Colour: {info['colour']}")
     st.subheader(f"CO2 Emissions: {emission_value}g/km")
+    st.subheader(f"Fuel Type: {fuel_type}")
     st.subheader(f"Type Approval: {vehicle_type} ({vehicle_type_class})")
 
     st.divider()
