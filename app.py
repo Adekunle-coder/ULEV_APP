@@ -1,6 +1,11 @@
 import requests
 import streamlit as st
 import pandas as pd
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 def get_co2_emission(vrm, api_key, url):
     
@@ -70,7 +75,7 @@ if st.button("Continue"):
         st.warning("Please enter a valid registration number.")
     else:
         url = "https://driver-vehicle-licensing.api.gov.uk/vehicle-enquiry/v1/vehicles"
-        API_KEY = "g3iPHWSLfm2yd9bBzy8C25GEZ8r276Ha9ekLTLsQ"
+        API_KEY = os.getenv("DVLA_API_KEY")
         data = get_co2_emission(VRM.strip(), API_KEY, url)
         if data and isinstance(data, list):
             st.session_state.current_vehicle = data[0]
