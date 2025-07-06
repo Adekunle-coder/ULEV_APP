@@ -10,7 +10,7 @@ load_dotenv()
 
 # Constants
 API_URL = "https://driver-vehicle-licensing.api.gov.uk/vehicle-enquiry/v1/vehicles"
-API_KEY = os.getenv("API_KEY")
+API_KEY = "g3iPHWSLfm2yd9bBzy8C25GEZ8r276Ha9ekLTLsQ"
 
 EXEMPTION_LIST = sorted([
     "Maintenance, B1+B2+B6.", "Royal Mail, B3.", "Bus, D.", "Emergency, E.",
