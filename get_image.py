@@ -26,8 +26,8 @@ def get_image(vrm):
             return img_url
         else:
             st.info("Image not found")
-    except:
-        st.info(f"An error was encountered while fetching the image")
+    except Exception as e:
+        st.info(f"An error was encountered while fetching the image: {e}")
     
     finally:
         driver.quit()
