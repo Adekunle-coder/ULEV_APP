@@ -3,7 +3,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
-
+import os
 import streamlit as st
 
 def get_image(vrm):
@@ -14,7 +14,13 @@ def get_image(vrm):
     options.add_argument("--disable-dev-shm-usage")
 
     # This is the Chromium path on Streamlit Cloud
-    options.binary_location = "/usr/bin/chromium-browser"
+    if os.path.exists("/usr/bin/chromium-browser"):
+        options.binary_location = "/usr/bin/chromium-browser"
+    elif os.path.exists("/usr/bin/chromium"):
+        options.binary_location = "/usr/bin/chromium"
+    else:
+        st.error("Chromium binary not found on this system.")
+        return
 
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=options)
