@@ -3,3 +3,6 @@ streamlit
 pandas
 requests
 python-dotenv
+selenium
+webdriver-manager
+chromium
