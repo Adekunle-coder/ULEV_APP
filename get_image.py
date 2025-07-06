@@ -29,5 +29,5 @@ def get_image(vrm: str) -> str | None:
         return None
 
     except requests.RequestException as e:
-        st.warning(f"Request failed")
+        st.warning(f"Request failed: {e}")
         return None
