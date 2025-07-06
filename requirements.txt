@@ -8,3 +8,4 @@ webdriver-manager
 chromium
 bs4
 cloudscraper
+undetected_chromedriver
