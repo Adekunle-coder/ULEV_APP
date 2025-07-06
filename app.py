@@ -4,7 +4,7 @@ import pandas as pd
 import os
 from dotenv import load_dotenv
 from get_image import get_image
-
+import time
 
 load_dotenv()
 
@@ -85,6 +85,8 @@ st.text("For example, CU57ABC")
 ulev_session = st.checkbox("Check this box if you're processing only ULEVs for a faster experience.")
 VRM = st.text_area("", height=70, max_chars=10).strip().upper()
 
+
+
 if st.button("Continue"):
     if not VRM:
         st.warning("Please enter a valid registration number.")
@@ -126,7 +128,11 @@ if info:
                 else:
                     add_vrm_to_list(exemption_type, current_vrm)
                     st.session_state.show_modal = False
-                    st.session_state.toggle = False
+                    st.session_state.current_vehicle = None
+                    st.session_state.current_vrm = ""
+                    time.sleep(2)
+                    st.rerun()
+
 
     elif emission_num is not None:
         if emission_num < 74:
@@ -140,8 +146,8 @@ if info:
             st.markdown("<h1 style='color: red;'>NOT ULEV</h1>", unsafe_allow_html=True)
 
     # Display Info
-    col1, col2 = st.columns([1.8, 2])  # Adjust ratio as needed
-
+    st.divider()
+    col1, col2 = st.columns([2, 1])  # Adjust ratio as needed
     with col1:
         st.subheader(f"Make: {info['make']}")
         st.subheader(f"Colour: {info['colour']}")
@@ -149,10 +155,10 @@ if info:
         st.subheader(f"Fuel Type: {info['fuel']}")
         st.subheader(f"Type Approval: {info['type']} ({vehicle_type_class})")
         
-    with col2:
-        image_url = get_image(st.session_state.current_vrm)
-        if image_url:
-            st.image(image_url, caption=f"{info['make']} {st.session_state.current_vrm}", use_container_width=True)
+    # with col2:
+    #     image_url = get_image(st.session_state.current_vrm)
+    #     if image_url:
+    #         st.image(image_url, caption=f"{info['make']} {st.session_state.current_vrm}", use_container_width=True)
      
 
 
