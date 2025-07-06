@@ -3,14 +3,14 @@ import streamlit as st
 import pandas as pd
 import os
 from dotenv import load_dotenv
+from get_image import get_image
+
 
 load_dotenv()
 
 # Constants
 API_URL = "https://driver-vehicle-licensing.api.gov.uk/vehicle-enquiry/v1/vehicles"
 API_KEY = os.getenv("API_KEY")
-
-
 
 EXEMPTION_LIST = sorted([
     "Maintenance, B1+B2+B6.", "Royal Mail, B3.", "Bus, D.", "Emergency, E.",
@@ -75,6 +75,8 @@ def add_vrm_to_list(exemption_type, vrm):
     else:
         st.info("This vehicle is already added.")
 
+
+
 # UI - Start
 st.title("Enter the registration number of the vehicle")
 st.subheader("Registration number (number plate)")
@@ -138,18 +140,25 @@ if info:
             st.markdown("<h1 style='color: red;'>NOT ULEV</h1>", unsafe_allow_html=True)
 
     # Display Info
-    st.divider()
+    col1, col2 = st.columns([1.8, 2])  # Adjust ratio as needed
 
-    st.subheader(f"Make: {info['make']}")
-    st.subheader(f"Colour: {info['colour']}")
-    st.subheader(f"CO2 Emissions: {info['emission']}g/km")
-    st.subheader(f"Fuel Type: {info['fuel']}")
-    st.subheader(f"Type Approval: {info['type']} ({vehicle_type_class})")
+    with col1:
+        st.subheader(f"Make: {info['make']}")
+        st.subheader(f"Colour: {info['colour']}")
+        st.subheader(f"CO2 Emissions: {info['emission']}g/km")
+        st.subheader(f"Fuel Type: {info['fuel']}")
+        st.subheader(f"Type Approval: {info['type']} ({vehicle_type_class})")
+        
+    with col2:
+        image_url = get_image(st.session_state.current_vrm)
+        if image_url:
+            st.image(image_url, caption=f"{info['make']} {st.session_state.current_vrm}", use_container_width=True)
+     
 
-    st.divider()
 
 # Stored VRMs
 if st.session_state.ulev_list:
+    st.divider()
     st.write(f"### Stored Vehicles - {len(st.session_state.ulev_list)}")
     for etype, vrm in st.session_state.ulev_list:
         st.write(f"{etype}: {vrm}")
