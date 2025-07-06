@@ -1,8 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 import streamlit as st
 
 
@@ -12,7 +10,6 @@ def get_image(vrm):
     options = Options()
     options.add_argument("--headless")
     options.add_argument("--disable-gpu")
-    options.add_argument("--disable-blink-features=AutomationControlled")
     driver = webdriver.Chrome(options=options)
     url = f"https://totalcarcheck.co.uk/FreeCheck?regno={vrm}"
     img_url = ""
@@ -20,10 +17,8 @@ def get_image(vrm):
     try:
         driver.get(url)
         print(driver.page_source)
-        image = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.ID, "vehicleImage"))
-        )
-        if img_url:
+        image = driver.find_element(By.ID, "vehicleImage")
+        if image:
             img_url = image.get_attribute("src")
             return img_url
         else:
