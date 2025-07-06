@@ -10,7 +10,7 @@ import streamlit as st
 
 def get_image(vrm):
     options = Options()
-    options.add_argument("--headless")
+    # options.add_argument("--headless")
     options.add_argument("--disable-gpu")
     driver = webdriver.Chrome(options=options)
     url = f"https://totalcarcheck.co.uk/FreeCheck?regno={vrm}"
