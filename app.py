@@ -155,10 +155,10 @@ if info:
         st.subheader(f"Fuel Type: {info['fuel']}")
         st.subheader(f"Type Approval: {info['type']} ({vehicle_type_class})")
         
-    with col2:
-        image_url = get_image(st.session_state.current_vrm)
-        if image_url:
-            st.image(image_url, caption=f"{info['make']} {st.session_state.current_vrm}", use_container_width=True)
+    # with col2:
+    #     image_url = get_image(st.session_state.current_vrm)
+    #     if image_url:
+    #         st.image(image_url, caption=f"{info['make']} {st.session_state.current_vrm}", use_container_width=True)
      
 
 
