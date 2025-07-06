@@ -10,14 +10,16 @@ import streamlit as st
 
 def get_image(vrm):
     options = Options()
-    # options.add_argument("--headless")
+    options.add_argument("--headless")
     options.add_argument("--disable-gpu")
+    options.add_argument("--disable-blink-features=AutomationControlled")
     driver = webdriver.Chrome(options=options)
     url = f"https://totalcarcheck.co.uk/FreeCheck?regno={vrm}"
     img_url = ""
 
     try:
         driver.get(url)
+        print(driver.page_source)
         image = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.ID, "vehicleImage"))
         )
