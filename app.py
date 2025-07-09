@@ -3,7 +3,7 @@ import streamlit as st
 import pandas as pd
 import os
 from dotenv import load_dotenv
-from get_image import get_image
+# from get_image import get_image
 import time
 
 load_dotenv()
@@ -142,6 +142,10 @@ if info:
                 st.markdown("<h1 style='color: green;'>ULEV</h1>", unsafe_allow_html=True)
                 if st.button("Add"):
                     add_vrm_to_list("ULEV. U.", st.session_state.current_vrm)
+                    st.session_state.current_vehicle = None
+                    st.session_state.current_vrm = ""
+                    time.sleep(2)
+                    st.rerun()
         else:
             st.markdown("<h1 style='color: red;'>NOT ULEV</h1>", unsafe_allow_html=True)
 
@@ -174,8 +178,9 @@ if st.session_state.ulev_list:
 
     if len(st.session_state.ulev_list) > 1:
         st.download_button(
-            label="Download ULEV VRMs as CSV",
+            label="Download VRMs as CSV",
             data=csv_data,
             file_name="ulev_vrms.csv",
             mime="text/csv"
         )
+
