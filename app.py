@@ -22,7 +22,7 @@ EXEMPTION_LIST = sorted([
 ])
 
 # Session state init
-for key in ["ulev_list", "current_vehicle", "current_vrm", "show_modal", "toggle"]:
+for key in ["ulev_list", "current_vehicle", "current_vrm", "show_modal", "toggle", "clear"]:
     if key not in st.session_state:
         st.session_state[key] = [] if "list" in key else False if "toggle" in key else ""
 
@@ -69,11 +69,14 @@ def classify_vehicle_type(type_approval):
 
 def add_vrm_to_list(exemption_type, vrm):
     vrm_lower = vrm.lower()
-    if vrm_lower not in [(v.lower()) for et, v in st.session_state.ulev_list]:
+    if vrm_lower not in [(v.lower()) for _, v in st.session_state.ulev_list]:
         st.session_state.ulev_list.append((exemption_type, vrm))
         st.success(f"Vehicle Added to the list")
     else:
         st.info("This vehicle is already added.")
+
+def clear_text():
+    st.session_state.text = ''
 
 
 
@@ -82,8 +85,8 @@ st.title("Enter the registration number of the vehicle")
 st.subheader("Registration number (number plate)")
 st.text("For example, CU57ABC")
 
-ulev_session = st.checkbox("Check this box if you're processing only ULEVs for a faster experience.")
-VRM = st.text_area("", height=70, max_chars=10).strip().upper()
+ulev_session = st.checkbox("Tick this box if you're processing only ULEVs for a faster experience.")
+VRM = st.text_area("", height=70, max_chars=10, key="text").strip().upper()
 
 
 
@@ -95,7 +98,6 @@ if st.button("Continue"):
         if data:
             st.session_state.current_vehicle = data[0]
             st.session_state.current_vrm = VRM
-            # st.session_state.toggle = True
         else:
             st.warning("No valid data returned.")
             st.session_state.current_vehicle = None
@@ -121,7 +123,7 @@ if info:
 
         if st.session_state.show_modal:
             exemption_type = st.selectbox("Select vehicle type", EXEMPTION_LIST)
-            if st.button("Confirm"):
+            if st.button("Confirm", on_click=clear_text):
                 current_vrm = st.session_state.current_vrm
                 if not current_vrm:
                     st.warning("No VRM selected.")
@@ -138,16 +140,26 @@ if info:
         if emission_num < 74:
             if emission_num == 0 and info['fuel'] == "DIESEL":
                 st.markdown("<h1 style='color: red;'>NOT ULEV</h1>", unsafe_allow_html=True)
+                if st.button("Clear Field", on_click=clear_text):
+                    st.session_state.current_vehicle = None
+                    st.session_state.current_vrm = ""
+                    time.sleep(1)
+                    st.rerun()
             else:
                 st.markdown("<h1 style='color: green;'>ULEV</h1>", unsafe_allow_html=True)
-                if st.button("Add"):
-                    add_vrm_to_list("ULEV. U.", st.session_state.current_vrm)
+                if st.button("Add VRM to list", on_click=clear_text):
+                    add_vrm_to_list("ULEV, U.", st.session_state.current_vrm)
                     st.session_state.current_vehicle = None
                     st.session_state.current_vrm = ""
                     time.sleep(2)
                     st.rerun()
         else:
             st.markdown("<h1 style='color: red;'>NOT ULEV</h1>", unsafe_allow_html=True)
+            if st.button("Clear Field", on_click=clear_text):
+                    st.session_state.current_vehicle = None
+                    st.session_state.current_vrm = ""
+                    time.sleep(1)
+                    st.rerun()
 
     # Display Info
     st.divider()
@@ -169,12 +181,11 @@ if info:
 # Stored VRMs
 if st.session_state.ulev_list:
     st.divider()
-    st.write(f"### Stored Vehicles - {len(st.session_state.ulev_list)}")
-    for etype, vrm in st.session_state.ulev_list:
-        st.write(f"{etype}: {vrm}")
 
     df_ulevs = pd.DataFrame(st.session_state.ulev_list, columns=["Exemption", "VRM"])
     csv_data = df_ulevs.to_csv(index=False).encode('utf-8')
+
+    st.write(f"### Stored Vehicles - {len(st.session_state.ulev_list)}")
 
     if len(st.session_state.ulev_list) > 1:
         st.download_button(
@@ -183,4 +194,9 @@ if st.session_state.ulev_list:
             file_name="ulev_vrms.csv",
             mime="text/csv"
         )
+    
+    for etype, vrm in st.session_state.ulev_list:
+        st.write(f"{etype}: {vrm}")
+
+    
 
